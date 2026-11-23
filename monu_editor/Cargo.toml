@@ -1,19 +1,10 @@
 [package]
 name = "monu_editor"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+description = "Редактор уровней Monu Editor"
 
 [dependencies]
-# Подключаем наш движок с включенными гизмо-фичами
-monu_engine = { path = "../monu_engine", features = ["editor-gizmos"] }
-
-ash.workspace = true
-winit.workspace = true
-glam.workspace = true
-log.workspace = true
-env_logger.workspace = true
-
-# UI подключается только сюда
-egui.workspace = true
-egui_dock.workspace = true
-egui-winit.workspace = true
+monu_engine = { workspace = true }
+bevy = { workspace = true }
+log = { workspace = true }

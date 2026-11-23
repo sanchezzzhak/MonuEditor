@@ -1,12 +1,10 @@
 [package]
 name = "monu_game"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+description = "Демонстрационная игра на Monu Engine"
 
 [dependencies]
-# Подключаем чистый движок без editor-gizmos и без egui
-monu_engine = { path = "../monu_engine" }
-
-winit.workspace = true
-log.workspace = true
-env_logger.workspace = true
+monu_engine = { workspace = true }
+bevy = { workspace = true }
+log = { workspace = true }

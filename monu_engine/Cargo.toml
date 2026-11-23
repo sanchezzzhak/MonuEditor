@@ -1,20 +1,33 @@
 [package]
 name = "monu_engine"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+description = "Игровой движок Monu Engine на базе Bevy"
+
+[dependencies]
+bevy = { workspace = true, features = [
+    "bevy_asset",
+    "bevy_scene",
+    "bevy_pbr",
+    "bevy_core_pipeline",
+    "bevy_render",
+    "bevy_window",
+    "bevy_winit",
+    "bevy_gizmos",
+    "bevy_log",
+    "multi_threaded",
+    "x11",
+] }
+glam = { workspace = true }
+parking_lot = { workspace = true }
+log = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+ron = { workspace = true }
+
+ash = { workspace = true, optional = true }
 
 [features]
 default = []
-# Флаг для отладочной отрисовки (сетка, коллайдеры), вырезается в релизе игры
-editor-gizmos = []
-
-[dependencies]
-ash.workspace = true
-winit.workspace = true
-glam.workspace = true
-parking_lot.workspace = true
-crossbeam-channel.workspace = true
-log.workspace = true
-raw-window-handle.workspace = true
-ash-window.workspace = true
-anyhow.workspace = true
+# Экспериментальный низкоуровневый Vulkan-слой поверх Bevy
+vulkan_raw = ["dep:ash"]

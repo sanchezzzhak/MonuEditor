@@ -1,33 +1,34 @@
-use monu_engine::{EngineConfig, EngineHooks, EngineRunner};
-use winit::event::WindowEvent;
-use winit::window::Window;
+//! Monu Editor — редактор уровней на базе Monu Engine.
+//!
+//! Запуск: `cargo run -p monu_editor`
+//! Управление камерой: ПКМ + WASD (как в Unreal Engine), Shift — ускорение.
 
-struct EditorApp {
-    // Сюда скоро добавим egui::Context, egui_winit::State и egui_dock::DockState
-}
-
-impl EngineHooks for EditorApp {
-    fn on_init(&mut self, _window: &Window) {
-        println!("Редактор: окно готово, можно инициализировать egui");
-    }
-
-    fn on_window_event(&mut self, _window: &Window, _event: &WindowEvent) -> bool {
-        // Здесь egui будет перехватывать клики по панелям
-        false
-    }
-
-    fn on_render_ui(&mut self, _window: &Window) {
-        // Здесь будем рисовать окна в стиле Blender/Unreal
-    }
-}
+use bevy::prelude::*;
+use monu_engine::{app::AppConfig, MonuApp};
 
 fn main() {
-    let config = EngineConfig {
-        title: "MonuEditor [Vulkan]".to_string(),
-        width: 1600,
-        height: 900,
-    };
+    let mut app = MonuApp::new(AppConfig::Editor);
+    app.add_plugins(EditorPlugin);
+    app.run();
+}
 
-    let editor = EditorApp {};
-    EngineRunner::run(config, editor).expect("Ошибка запуска редактора");
+/// Плагин редактора: пока минимальный каркас.
+/// Дальше сюда: hierarchy-панель, инспектор (egui), selection, gizmo-манипуляторы.
+struct EditorPlugin;
+
+impl Plugin for EditorPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, editor_startup_info)
+            .add_systems(Update, hotkeys);
+    }
+}
+
+fn editor_startup_info() {
+    info!("Monu Editor запущен. Следующие шаги: панель иерархии, инспектор, выделение объектов мышью.");
+}
+
+fn hotkeys(keys: Res<ButtonInput<KeyCode>>, mut exit: EventWriter<AppExit>) {
+    if keys.just_pressed(KeyCode::Escape) {
+        exit.write(AppExit::Success);
+    }
 }

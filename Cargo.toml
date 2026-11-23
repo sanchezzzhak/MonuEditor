@@ -6,20 +6,35 @@ members = [
     "monu_game",
 ]
 
+# Общие версии библиотек для всего проекта
 [workspace.dependencies]
+# Основной фреймворк движка
+bevy = { version = "0.17", default-features = false }
+
+# Vulkan (низкоуровневые эксперименты / кастомные рендер-проходы)
 ash = "0.38"
 winit = "0.30"
+
 glam = "0.29"
 parking_lot = "0.12"
 crossbeam-channel = "0.5"
 log = "0.4"
 env_logger = "0.11"
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+ron = "0.8"
+
+# UI редактора (используется ТОЛЬКО в monu_editor)
 egui = "0.31"
 egui_dock = "0.15"
 egui-winit = "0.31"
-raw-window-handle = "0.6"
-ash-window = "0.13"
-anyhow = "1.0"
+
+# Внутренние crate'ы
+monu_engine = { path = "monu_engine" }
+
+# Профиль для быстрой отладки "бомж-ПК"
+[profile.dev]
+opt-level = 1
 
 [profile.dev.package."*"]
 opt-level = 3
