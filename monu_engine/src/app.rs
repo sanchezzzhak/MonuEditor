@@ -12,6 +12,12 @@ use crate::camera::EditorCameraPlugin;
 use crate::world::WorldPlugin;
 use crate::ENGINE_VERSION;
 
+use bevy::transform::TransformPlugin;
+use big_space::prelude::*;
+use crate::settings::{EditorCommand, WorldSpaceSettings};
+use crate::ecs::Primitives;
+
+
 /// Режим запуска приложения
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AppConfig {
@@ -24,30 +30,38 @@ pub enum AppConfig {
 /// Конструктор приложений на базе движка
 pub struct MonuApp;
 
+
+
 impl MonuApp {
     /// Создать приложение в выбранном режиме.
     pub fn new(mode: AppConfig) -> App {
         let mut app = App::new();
+        let space_settings = WorldSpaceSettings::default();
 
-        app.add_plugins(
+        app.add_plugins((
             DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: format!("Monu Engine v{ENGINE_VERSION} [{mode:?}]"),
-                        resolution: (1600, 900).into(),
-                        ..default()
-                    }),
-                    ..default()
-                })
-                .set(LogPlugin {
-                    level: Level::INFO,
-                    filter: "wgpu=error,naga=warn".into(),
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: format!("Monu Engine v{ENGINE_VERSION} [{mode:?}]"),
+                    resolution: (1600, 900).into(),
                     ..default()
                 }),
-        );
-
-        app.insert_resource(ModeResource(mode));
-        app.add_plugins((WorldPlugin, EditorCameraPlugin));
+                ..default()
+            })
+            .set(LogPlugin {
+                level: Level::INFO,
+                filter: "wgpu=error,naga=warn".into(),
+                ..default()
+            })
+            .disable::<TransformPlugin>(),
+            BigSpaceDefaultPlugins,
+        ))
+            .insert_resource(ModeResource(mode))
+            .insert_resource(space_settings)
+            .register_type::<WorldSpaceSettings>()
+            .add_message::<EditorCommand>()
+            .add_plugins((WorldPlugin, EditorCameraPlugin))
+            .add_systems(Update, handle_editor_commands);
 
         match mode {
             AppConfig::Game => Self::setup_game(&mut app),
@@ -88,17 +102,81 @@ fn spawn_default_level(mut commands: Commands) {
     info!("Default level spawned");
 }
 
-fn spawn_editor_scene(mut commands: Commands, config: Res<ModeResource>) {
-    // Полётная камера редактора
-    commands.spawn((
-        Name::new("EditorCamera"),
-        crate::camera::FlyCamera::default(),
-        Transform::from_xyz(0.0, 2.0, 8.0),
-        Camera3d::default(),
-    ));
+#[derive(Component)]
+pub struct WorldGridRoot;
+fn spawn_editor_scene(
+    mut commands: Commands,
+    config: Res<ModeResource>,
+    space: Res<WorldSpaceSettings>,
+) {
+    commands
+        .spawn((
+            WorldGridRoot,
+            BigSpace::default(),
+            Grid::new(space.cell_edge_length, space.switching_threshold),
+        ))
+        .with_children(|root| {
+            root.spawn((
+                Name::new("EditorCamera"),
+                crate::camera::FlyCamera::default(),
+                Transform::from_xyz(0.0, 5.0, 12.0),
+                CellCoord::default(),
+                FloatingOrigin,
+                Camera3d::default(),
+            ));
+
+            root.spawn((
+                Name::new("EditorSun"),
+                DirectionalLight {
+                    illuminance: 25000.0,
+                    shadow_maps_enabled: true,
+                    ..default()
+                },
+                Transform::from_rotation(Quat::from_euler(EulerRot::XYZ, -0.8, -0.5, 0.0)),
+                CellCoord::default(),
+            ));
+        });
 
     commands.insert_resource(GridShown);
     info!("Editor scene ready ({:?})", config.0);
+}
+
+fn handle_editor_commands(
+    mut commands: Commands,
+    mut reader: MessageReader<EditorCommand>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    grid_root: Query<Entity, With<WorldGridRoot>>,
+    grid_shown: Option<Res<GridShown>>,
+) {
+    let Ok(root_entity) = grid_root.single() else { return };
+
+    for cmd in reader.read() {
+        match cmd {
+            EditorCommand::SpawnCube { name, size, pos } => {
+                let entity = Primitives::cube(&mut commands, &mut meshes, &mut materials, name, *size, *pos)
+                    .insert(CellCoord::default())
+                    .id();
+                commands.entity(root_entity).add_child(entity);
+            }
+            EditorCommand::SpawnPlane { size } => {
+                let entity = Primitives::plane(&mut commands, &mut meshes, &mut materials, *size)
+                    .insert(CellCoord::default())
+                    .id();
+                commands.entity(root_entity).add_child(entity);
+            }
+            EditorCommand::DeleteEntity(entity) => {
+                commands.entity(*entity).despawn();
+            }
+            EditorCommand::ToggleGrid => {
+                if grid_shown.is_some() {
+                    commands.remove_resource::<GridShown>();
+                } else {
+                    commands.insert_resource(GridShown);
+                }
+            }
+        }
+    }
 }
 
 /// Отдельная группа гизмо для редактора (можно вкл/выкл независимо от игры)

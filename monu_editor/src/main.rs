@@ -5,6 +5,8 @@
 
 use bevy::prelude::*;
 use monu_engine::{app::AppConfig, MonuApp};
+mod ui;
+use ui::EditorUiPlugin;
 
 fn main() {
     let mut app = MonuApp::new(AppConfig::Editor);
@@ -18,7 +20,8 @@ struct EditorPlugin;
 
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, editor_startup_info)
+        app.add_plugins(EditorUiPlugin)
+            .add_systems(Startup, editor_startup_info)
             .add_systems(Update, hotkeys);
     }
 }

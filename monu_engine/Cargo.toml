@@ -24,6 +24,7 @@ log = { workspace = true }
 anyhow = { workspace = true }
 serde = { workspace = true }
 ron = { workspace = true }
+big_space = { workspace = true }
 
 ash = { workspace = true, optional = true }
 

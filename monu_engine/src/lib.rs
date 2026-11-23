@@ -11,6 +11,7 @@ pub mod app;
 pub mod camera;
 pub mod ecs;
 pub mod world;
+pub mod settings;
 
 #[cfg(feature = "vulkan_raw")]
 pub mod vulkan_ctx;

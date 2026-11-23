@@ -5,6 +5,9 @@ edition = "2021"
 description = "Редактор уровней Monu Editor"
 
 [dependencies]
+
 monu_engine = { workspace = true }
 bevy = { workspace = true }
 log = { workspace = true }
+bevy_egui = {workspace = true}
+egui_dock = {workspace = true}
