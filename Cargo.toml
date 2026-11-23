@@ -1,0 +1,25 @@
+[workspace]
+resolver = "3"
+members = [
+    "monu_engine",
+    "monu_editor",
+    "monu_game",
+]
+
+[workspace.dependencies]
+ash = "0.38"
+winit = "0.30"
+glam = "0.29"
+parking_lot = "0.12"
+crossbeam-channel = "0.5"
+log = "0.4"
+env_logger = "0.11"
+egui = "0.31"
+egui_dock = "0.15"
+egui-winit = "0.31"
+raw-window-handle = "0.6"
+ash-window = "0.13"
+anyhow = "1.0"
+
+[profile.dev.package."*"]
+opt-level = 3

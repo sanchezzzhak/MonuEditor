@@ -1,26 +1,19 @@
-[workspace]
-resolver = "3"
-members = [
-    "monu_engine",
-    "monu_editor",
-    "monu_game",
-]
+[package]
+name = "monu_editor"
+version = "0.1.0"
+edition = "2024"
 
-# Общие версии библиотек для всего проекта
-[workspace.dependencies]
-ash = "0.38"
-winit = "0.30"
-glam = "0.29"
-parking_lot = "0.12"
-crossbeam-channel = "0.5"
-log = "0.4"
-env_logger = "0.11"
+[dependencies]
+# Подключаем наш движок с включенными гизмо-фичами
+monu_engine = { path = "../monu_engine", features = ["editor-gizmos"] }
 
-# UI (используется ТОЛЬКО в monu_editor)
-egui = "0.31"
-egui_dock = "0.15"
-egui-winit = "0.31"
+ash.workspace = true
+winit.workspace = true
+glam.workspace = true
+log.workspace = true
+env_logger.workspace = true
 
-# Профиль для быстрой отладки "бомж-ПК"
-[profile.dev.package."*"]
-opt-level = 3
+# UI подключается только сюда
+egui.workspace = true
+egui_dock.workspace = true
+egui-winit.workspace = true
