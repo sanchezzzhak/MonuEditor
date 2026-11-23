@@ -1,0 +1,10 @@
+[package]
+name = "monu_game"
+version = "0.1.0"
+edition = "2021"
+description = "Демонстрационная игра на Monu Engine"
+
+[dependencies]
+monu_engine = { workspace = true }
+bevy = { workspace = true }
+log = { workspace = true }
