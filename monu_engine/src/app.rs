@@ -6,7 +6,7 @@
 use bevy::log::{Level, LogPlugin};
 use bevy::prelude::*;
 use bevy::reflect::Reflect;
-use bevy::gizmos::config::{GizmoConfigGroup, GizmoConfigStore};
+use bevy::gizmos::config::{GizmoConfigGroup};
 
 use crate::camera::EditorCameraPlugin;
 use crate::world::WorldPlugin;
@@ -62,8 +62,9 @@ impl MonuApp {
     }
 
     fn setup_editor(app: &mut App) {
-        app.add_systems(Startup, spawn_editor_scene)
-            .add_systems(Update, draw_editor_grid.run_if(resource_added::<GridShown>));
+        app.init_gizmo_group::<EditorGizmos>()
+            .add_systems(Startup, spawn_editor_scene)
+            .add_systems(Update, draw_editor_grid.run_if(resource_exists::<GridShown>));
     }
 }
 
@@ -104,10 +105,7 @@ fn spawn_editor_scene(mut commands: Commands, config: Res<ModeResource>) {
 #[derive(GizmoConfigGroup, Default, Debug, Reflect)]
 struct EditorGizmos;
 
-fn draw_editor_grid(
-    mut gizmos: Gizmos<EditorGizmos>,
-    mut config_store: ResMut<GizmoConfigStore>,
-) {
+fn draw_editor_grid(mut gizmos: Gizmos<EditorGizmos>) {
     // Оси мира: X красный, Y зелёный, Z синий
     gizmos.linestrip(
         [Vec3::ZERO, Vec3::X * 2.0],
@@ -122,21 +120,28 @@ fn draw_editor_grid(
         Color::srgb(0.2, 0.2, 0.9),
     );
 
-    let _ = &mut config_store;
-
     // Сетка-пол 64x64
     let half = 32.0;
     let step = 1.0;
     let mut x = -half;
     while x <= half {
-        let c = if x == 0.0 { Color::srgba(0.7, 0.7, 0.7, 0.5) } else { Color::srgba(0.4, 0.4, 0.4, 0.25) };
+        let c = if x == 0.0 {
+            Color::srgba(0.7, 0.7, 0.7, 0.5)
+        } else {
+            Color::srgba(0.4, 0.4, 0.4, 0.25)
+        };
         gizmos.linestrip([Vec3::new(x, 0.0, -half), Vec3::new(x, 0.0, half)], c);
         x += step;
     }
     let mut z = -half;
     while z <= half {
-        let c = if z == 0.0 { Color::srgba(0.7, 0.7, 0.7, 0.5) } else { Color::srgba(0.4, 0.4, 0.4, 0.25) };
+        let c = if z == 0.0 {
+            Color::srgba(0.7, 0.7, 0.7, 0.5)
+        } else {
+            Color::srgba(0.4, 0.4, 0.4, 0.25)
+        };
         gizmos.linestrip([Vec3::new(-half, 0.0, z), Vec3::new(half, 0.0, z)], c);
         z += step;
     }
 }
+

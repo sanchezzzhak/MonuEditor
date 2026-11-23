@@ -27,7 +27,7 @@ fn editor_startup_info() {
     info!("Monu Editor запущен. Следующие шаги: панель иерархии, инспектор, выделение объектов мышью.");
 }
 
-fn hotkeys(keys: Res<ButtonInput<KeyCode>>, mut exit: EventWriter<AppExit>) {
+fn hotkeys(keys: Res<ButtonInput<KeyCode>>, mut exit: MessageWriter<AppExit>) {
     if keys.just_pressed(KeyCode::Escape) {
         exit.write(AppExit::Success);
     }
