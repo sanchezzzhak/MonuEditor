@@ -1,6 +1,5 @@
 pub mod environment;
 pub mod space;
-
 pub use environment::EnvironmentSettings;
 pub use space::WorldSpaceSettings;
 

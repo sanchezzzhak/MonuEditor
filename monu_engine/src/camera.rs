@@ -3,6 +3,8 @@
 use bevy::prelude::*;
 use bevy::window::CursorMoved;
 use std::f32::consts::FRAC_PI_2;
+use bevy::input::mouse::MouseWheel;
+
 
 /// Плагин камеры редактора
 pub struct EditorCameraPlugin;
@@ -48,7 +50,8 @@ fn fly_camera_movement(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
-    mut q: Query<(&mut Transform, &FlyCamera), With<FlyCamera>>,
+    mut q: Query<(&mut Transform, &mut FlyCamera), With<FlyCamera>>,
+    mut wheel_events: MessageReader<MouseWheel>
 ) {
     let forward = axis(keys.pressed(KeyCode::KeyW), keys.pressed(KeyCode::KeyS));
     let right = axis(keys.pressed(KeyCode::KeyD), keys.pressed(KeyCode::KeyA));
@@ -56,6 +59,14 @@ fn fly_camera_movement(
 
     if forward == 0.0 && right == 0.0 && up == 0.0 {
         return;
+    }
+
+    let wheel_delta: f32 = wheel_events.read().map(|ev| ev.y).sum();
+    if mouse.pressed(MouseButton::Right) && wheel_delta != 0.0 {
+        for (_, mut cam) in &mut q {
+            let factor = if wheel_delta > 0.0 { 1.25 } else { 0.8 };
+            cam.speed = (cam.speed * factor).clamp(0.5, 2000.0);
+        }
     }
 
     for (mut tf, cam) in &mut q {

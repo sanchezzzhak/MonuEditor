@@ -1,13 +1,17 @@
 mod details;
 mod outliner;
 mod world_settings;
+mod top_bar;
 
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin, EguiPrimaryContextPass};
 use egui_dock::{DockArea, DockState, Style, TabViewer};
+use monu_engine::CellCoord;
+use monu_engine::camera::FlyCamera;
 use monu_engine::commands::EditorCommand;
 use monu_engine::settings::LevelSettings;
 use monu_engine::world::LevelObject;
+
 
 pub struct EditorUiPlugin;
 
@@ -19,13 +23,33 @@ impl Plugin for EditorUiPlugin {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum EditorTab {
     Viewport,
     Outliner,
     Details,
     WorldSettings,
     ContentBrowser,
+}
+
+impl EditorTab {
+    const ALL: [EditorTab; 5] = [
+        EditorTab::Viewport,
+        EditorTab::Outliner,
+        EditorTab::Details,
+        EditorTab::WorldSettings,
+        EditorTab::ContentBrowser,
+    ];
+
+    fn label(self) -> &'static str {
+        match self {
+            EditorTab::Viewport => "Viewport",
+            EditorTab::Outliner => "Outliner",
+            EditorTab::Details => "Details",
+            EditorTab::WorldSettings => "World Settings",
+            EditorTab::ContentBrowser => "Content / Terrain",
+        }
+    }
 }
 
 #[derive(Resource)]
@@ -40,19 +64,35 @@ impl Default for EditorUiState {
         let mut dock_state = DockState::new(vec![EditorTab::Viewport]);
         let surface = dock_state.main_surface_mut();
 
+        // 1. Отделяем правую панель: 0.78 остаётся центру, 0.22 уходит вправо
         let [center, _right] = surface.split_right(
             egui_dock::NodeIndex::root(),
-            0.22,
+            0.78,
             vec![EditorTab::Details, EditorTab::WorldSettings],
         );
+
+        // 2. Отделяем левую панель от центра: 0.20 ( ~16% от экрана) уходит влево, 0.80 остаётся центру
         let [center, _left] = surface.split_left(center, 0.20, vec![EditorTab::Outliner]);
+
+        // 3. Отделяем нижнюю панель от центра: 0.76 остаётся вьюпорту сверху, 0.24 уходит вниз
         let [_center, _bottom] =
-            surface.split_below(center, 0.24, vec![EditorTab::ContentBrowser]);
+            surface.split_below(center, 0.76, vec![EditorTab::ContentBrowser]);
 
         Self {
             dock_state,
             selected: None,
             pointer_over_ui: false,
+        }
+    }
+}
+
+impl EditorUiState {
+    /// Открывает вкладку заново, если её закрыли, или переключает на неё фокус
+    pub fn open_or_focus_tab(&mut self, tab: EditorTab) {
+        if let Some(location) = self.dock_state.find_tab(&tab) {
+            let _ = self.dock_state.set_active_tab(location);
+        } else {
+            self.dock_state.push_to_first_leaf(tab);
         }
     }
 }
@@ -63,6 +103,7 @@ fn draw_editor_ui(
     mut cmd_writer: MessageWriter<EditorCommand>,
     mut level_settings: ResMut<LevelSettings>,
     mut objects_q: Query<(Entity, &Name, &mut Transform), With<LevelObject>>,
+    mut cam_q: Query<(&mut FlyCamera, &mut Transform, &mut CellCoord), Without<LevelObject>>,
 ) {
     let Ok(ctx) = contexts.ctx_mut() else { return };
     let dock_style = Style::from_egui(ctx.global_style().as_ref());
@@ -73,33 +114,25 @@ fn draw_editor_ui(
         .order(egui::Order::Background)
         .show(ctx, |ui| {
             ui.set_min_size(ctx.content_rect().size());
-
+            
+            // Верхняя панель меню (вынесена в top_bar.rs)
             egui::Panel::top("top_menu_bar").show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    ui.strong("MONU EDITOR");
-                    ui.separator();
-
-                    ui.menu_button("Add", |ui| {
-                        if ui.button("Cube").clicked() {
-                            cmd_writer.write(EditorCommand::SpawnCube {
-                                name: "Cube".into(),
-                                size: Vec3::ONE,
-                                pos: Vec3::new(0.0, 0.5, 0.0),
-                            });
-                            ui.close();
-                        }
-                        if ui.button("Ground Plane (64m)").clicked() {
-                            cmd_writer.write(EditorCommand::SpawnPlane { size: 64.0 });
-                            ui.close();
-                        }
-                    });
-
-                    if ui.button("Toggle Grid").clicked() {
-                        cmd_writer.write(EditorCommand::ToggleGrid);
-                    }
-                });
+                if let Ok((mut cam, mut cam_tf, mut cam_cell)) = cam_q.single_mut() {
+                    let space_snapshot = level_settings.space.clone();
+                    top_bar::draw_top_bar(
+                        ui,
+                        &mut ui_state,
+                        &mut cmd_writer,
+                        &space_snapshot,
+                        &mut cam,
+                        &mut cam_tf,
+                        &mut cam_cell,
+                    );
+                }
             });
 
+
+            // Рабочее пространство с докингом вкладок
             let mut dock_state =
                 std::mem::replace(&mut ui_state.dock_state, DockState::new(vec![]));
             let mut viewer = MonuTabViewer {
@@ -134,13 +167,12 @@ impl TabViewer for MonuTabViewer<'_, '_, '_, '_, '_, '_> {
     }
 
     fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
-        match tab {
-            EditorTab::Viewport => "Viewport".into(),
-            EditorTab::Outliner => "Outliner".into(),
-            EditorTab::Details => "Details".into(),
-            EditorTab::WorldSettings => "World Settings".into(),
-            EditorTab::ContentBrowser => "Content / Terrain".into(),
-        }
+        tab.label().into()
+    }
+
+    fn closeable(&mut self, tab: &mut Self::Tab) -> bool {
+        // Главный Viewport нельзя случайно закрыть крестиком
+        !matches!(tab, EditorTab::Viewport)
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, tab: &mut Self::Tab) {

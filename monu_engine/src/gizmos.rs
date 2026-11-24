@@ -1,6 +1,8 @@
+use crate::camera::FlyCamera;
 use crate::settings::LevelSettings;
 use bevy::gizmos::config::GizmoConfigGroup;
 use bevy::prelude::*;
+use big_space::prelude::CellCoord;
 
 #[derive(Resource)]
 pub struct GridShown;
@@ -18,13 +20,39 @@ impl Plugin for EditorGizmosPlugin {
     }
 }
 
-fn draw_editor_grid(mut gizmos: Gizmos<EditorGizmos>, settings: Res<LevelSettings>) {
-    // 1. Оси мира
-    gizmos.linestrip([Vec3::ZERO, Vec3::X * 2.0], Color::srgb(0.9, 0.2, 0.2));
-    gizmos.linestrip([Vec3::ZERO, Vec3::Y * 2.0], Color::srgb(0.2, 0.9, 0.2));
-    gizmos.linestrip([Vec3::ZERO, Vec3::Z * 2.0], Color::srgb(0.2, 0.2, 0.9));
+fn draw_editor_grid(
+    mut gizmos: Gizmos<EditorGizmos>,
+    settings: Res<LevelSettings>,
+    cam_q: Query<&CellCoord, With<FlyCamera>>,
+) {
+    let chunk_size = settings.space.cell_edge_length;
 
-    // 2. Локальная метровая сетка 64x64
+    // Смещение глобального нуля (чанк 0,0,0) относительно текущей ячейки камеры
+    let origin_offset = if let Ok(cam_cell) = cam_q.single() {
+        Vec3::new(
+            -(cam_cell.x as f32) * chunk_size,
+            -(cam_cell.y as f32) * chunk_size,
+            -(cam_cell.z as f32) * chunk_size,
+        )
+    } else {
+        Vec3::ZERO
+    };
+
+    // 1. Оси мира в настоящем нуле (0, 0, 0)
+    gizmos.linestrip(
+        [origin_offset, origin_offset + Vec3::X * 2.0],
+        Color::srgb(0.9, 0.2, 0.2),
+    );
+    gizmos.linestrip(
+        [origin_offset, origin_offset + Vec3::Y * 2.0],
+        Color::srgb(0.2, 0.9, 0.2),
+    );
+    gizmos.linestrip(
+        [origin_offset, origin_offset + Vec3::Z * 2.0],
+        Color::srgb(0.2, 0.2, 0.9),
+    );
+
+    // 2. Локальная метровая сетка 64x64 в нулевом чанке
     let half = 32.0;
     let mut x = -half;
     while x <= half {
@@ -33,7 +61,13 @@ fn draw_editor_grid(mut gizmos: Gizmos<EditorGizmos>, settings: Res<LevelSetting
         } else {
             Color::srgba(0.4, 0.4, 0.4, 0.2)
         };
-        gizmos.linestrip([Vec3::new(x, 0.0, -half), Vec3::new(x, 0.0, half)], c);
+        gizmos.linestrip(
+            [
+                origin_offset + Vec3::new(x, 0.0, -half),
+                origin_offset + Vec3::new(x, 0.0, half),
+            ],
+            c,
+        );
         x += 1.0;
     }
     let mut z = -half;
@@ -43,32 +77,50 @@ fn draw_editor_grid(mut gizmos: Gizmos<EditorGizmos>, settings: Res<LevelSetting
         } else {
             Color::srgba(0.4, 0.4, 0.4, 0.2)
         };
-        gizmos.linestrip([Vec3::new(-half, 0.0, z), Vec3::new(half, 0.0, z)], c);
+        gizmos.linestrip(
+            [
+                origin_offset + Vec3::new(-half, 0.0, z),
+                origin_offset + Vec3::new(half, 0.0, z),
+            ],
+            c,
+        );
         z += 1.0;
     }
 
-    // 3. Границы всего мира и сетка чанков
-    let chunk_size = settings.space.cell_edge_length;
-    let total_x = settings.space.world_grid_size[0] as f32 * chunk_size;
-    let total_z = settings.space.world_grid_size[1] as f32 * chunk_size;
+    // Границы всего мира и сетка чанков (привязаны к настоящему нулю)
+    let [grid_x, grid_z] = settings.space.world_grid_size;
+    let total_x = grid_x as f32 * chunk_size;
+    let total_z = grid_z as f32 * chunk_size;
     let half_x = total_x * 0.5;
     let half_z = total_z * 0.5;
 
     let border_color = Color::srgb(1.0, 0.45, 0.1);
     let y = 0.05;
-    let p1 = Vec3::new(-half_x, y, -half_z);
-    let p2 = Vec3::new(half_x, y, -half_z);
-    let p3 = Vec3::new(half_x, y, half_z);
-    let p4 = Vec3::new(-half_x, y, half_z);
+    let p1 = origin_offset + Vec3::new(-half_x, y, -half_z);
+    let p2 = origin_offset + Vec3::new(half_x, y, -half_z);
+    let p3 = origin_offset + Vec3::new(half_x, y, half_z);
+    let p4 = origin_offset + Vec3::new(-half_x, y, half_z);
     gizmos.linestrip([p1, p2, p3, p4, p1], border_color);
 
     let chunk_color = Color::srgba(0.2, 0.7, 1.0, 0.35);
-    for ix in 1..settings.space.world_grid_size[0] {
+    for ix in 1..grid_x {
         let cx = -half_x + ix as f32 * chunk_size;
-        gizmos.linestrip([Vec3::new(cx, y, -half_z), Vec3::new(cx, y, half_z)], chunk_color);
+        gizmos.linestrip(
+            [
+                origin_offset + Vec3::new(cx, y, -half_z),
+                origin_offset + Vec3::new(cx, y, half_z),
+            ],
+            chunk_color,
+        );
     }
-    for iz in 1..settings.space.world_grid_size[1] {
+    for iz in 1..grid_z {
         let cz = -half_z + iz as f32 * chunk_size;
-        gizmos.linestrip([Vec3::new(-half_x, y, cz), Vec3::new(half_x, y, cz)], chunk_color);
+        gizmos.linestrip(
+            [
+                origin_offset + Vec3::new(-half_x, y, cz),
+                origin_offset + Vec3::new(half_x, y, cz),
+            ],
+            chunk_color,
+        );
     }
 }
