@@ -5,6 +5,7 @@ edition = "2021"
 description = "Игровой движок Monu Engine на базе Bevy"
 
 [dependencies]
+
 bevy = { workspace = true, features = [
     "bevy_asset",
     "bevy_scene",
@@ -23,6 +24,7 @@ parking_lot = { workspace = true }
 log = { workspace = true }
 anyhow = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace=true }
 ron = { workspace = true }
 big_space = { workspace = true }
 

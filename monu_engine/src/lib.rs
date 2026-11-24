@@ -6,18 +6,18 @@
 //! - `world`  — компоненты и плагины мира/сцены
 //! - `camera` — камера редактора (WASD + мышь)
 //! - `ecs`    — утилиты над Bevy ECS
+//! - `commands`  — команды
+//! - `gizmos`  — гизмо
 
 pub mod app;
 pub mod camera;
+pub mod commands;
 pub mod ecs;
-pub mod world;
+pub mod gizmos;
 pub mod settings;
-
-#[cfg(feature = "vulkan_raw")]
 pub mod vulkan_ctx;
+pub mod world;
 
-pub use app::MonuApp;
-pub use world::WorldPlugin;
+pub use app::{AppConfig, MonuApp};
 
-/// Версия движка
 pub const ENGINE_VERSION: &str = env!("CARGO_PKG_VERSION");

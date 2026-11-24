@@ -1,0 +1,27 @@
+{
+  "level_name": "Main_World1",
+  "space": {
+    "cell_edge_length": 3000.0,
+    "switching_threshold": 50.0,
+    "world_grid_size": [
+      100,
+      100
+    ],
+    "streaming_radius": 4
+  },
+  "env": {
+    "sky_color": [
+      0.76954263,
+      0.68279415,
+      0.68279415
+    ],
+    "ambient_brightness": 0.0,
+    "sun_pitch_deg": -90.0,
+    "sun_yaw_deg": 0.0,
+    "sun_illuminance": 0.0,
+    "fog_enabled": true,
+    "fog_start": 10.0,
+    "fog_end": 50.0,
+    "gravity": -10.0
+  }
+}
