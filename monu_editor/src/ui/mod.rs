@@ -2,11 +2,13 @@ mod details;
 mod outliner;
 mod world_settings;
 mod top_bar;
+mod terrain_tab;
 
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin, EguiPrimaryContextPass};
 use egui_dock::{DockArea, DockState, Style, TabViewer};
 use monu_engine::CellCoord;
+use monu_engine::terrain::{TerrainBrush, TerrainChunk, TerrainCommand};
 use monu_engine::camera::FlyCamera;
 use monu_engine::commands::EditorCommand;
 use monu_engine::settings::LevelSettings;
@@ -29,15 +31,18 @@ pub enum EditorTab {
     Outliner,
     Details,
     WorldSettings,
+    Terrain,
     ContentBrowser,
+
 }
 
 impl EditorTab {
-    const ALL: [EditorTab; 5] = [
+    const ALL: [EditorTab; 6] = [
         EditorTab::Viewport,
         EditorTab::Outliner,
         EditorTab::Details,
         EditorTab::WorldSettings,
+        EditorTab::Terrain,
         EditorTab::ContentBrowser,
     ];
 
@@ -46,6 +51,7 @@ impl EditorTab {
             EditorTab::Viewport => "Viewport",
             EditorTab::Outliner => "Outliner",
             EditorTab::Details => "Details",
+            EditorTab::Terrain => "Terrain",
             EditorTab::WorldSettings => "World Settings",
             EditorTab::ContentBrowser => "Content / Terrain",
         }
@@ -64,17 +70,21 @@ impl Default for EditorUiState {
         let mut dock_state = DockState::new(vec![EditorTab::Viewport]);
         let surface = dock_state.main_surface_mut();
 
-        // 1. Отделяем правую панель: 0.78 остаётся центру, 0.22 уходит вправо
+        // Правая панель: Details, WorldSettings и Terrain
         let [center, _right] = surface.split_right(
             egui_dock::NodeIndex::root(),
             0.78,
-            vec![EditorTab::Details, EditorTab::WorldSettings],
+            vec![
+                EditorTab::Details,
+                EditorTab::WorldSettings,
+                EditorTab::Terrain,
+            ],
         );
 
-        // 2. Отделяем левую панель от центра: 0.20 ( ~16% от экрана) уходит влево, 0.80 остаётся центру
+        // Левая панель: Outliner
         let [center, _left] = surface.split_left(center, 0.20, vec![EditorTab::Outliner]);
 
-        // 3. Отделяем нижнюю панель от центра: 0.76 остаётся вьюпорту сверху, 0.24 уходит вниз
+        // Нижняя панель: ContentBrowser
         let [_center, _bottom] =
             surface.split_below(center, 0.76, vec![EditorTab::ContentBrowser]);
 
@@ -101,9 +111,12 @@ fn draw_editor_ui(
     mut contexts: EguiContexts,
     mut ui_state: ResMut<EditorUiState>,
     mut cmd_writer: MessageWriter<EditorCommand>,
+    mut terrain_cmd: MessageWriter<TerrainCommand>,
     mut level_settings: ResMut<LevelSettings>,
+    mut terrain_brush: ResMut<TerrainBrush>,
     mut objects_q: Query<(Entity, &Name, &mut Transform), With<LevelObject>>,
     mut cam_q: Query<(&mut FlyCamera, &mut Transform, &mut CellCoord), Without<LevelObject>>,
+    terrain_q: Query<(), With<TerrainChunk>>,
 ) {
     let Ok(ctx) = contexts.ctx_mut() else { return };
     let dock_style = Style::from_egui(ctx.global_style().as_ref());
@@ -135,11 +148,16 @@ fn draw_editor_ui(
             // Рабочее пространство с докингом вкладок
             let mut dock_state =
                 std::mem::replace(&mut ui_state.dock_state, DockState::new(vec![]));
+            let has_terrain = !terrain_q.is_empty();
+
             let mut viewer = MonuTabViewer {
                 selected: &mut ui_state.selected,
                 cmd_writer: &mut cmd_writer,
+                terrain_cmd: &mut terrain_cmd,
                 level_settings: &mut level_settings,
+                terrain_brush: &mut terrain_brush,
                 objects_q: &mut objects_q,
+                has_terrain,
             };
 
             DockArea::new(&mut dock_state)
@@ -149,17 +167,23 @@ fn draw_editor_ui(
             ui_state.dock_state = dock_state;
         });
 
-    ui_state.pointer_over_ui = ctx.is_pointer_over_egui();
+    let over_ui = ctx.wants_pointer_input();
+    ui_state.pointer_over_ui = over_ui;
+    terrain_brush.pointer_over_ui = over_ui;
+    
 }
 
-struct MonuTabViewer<'a, 'w1, 'w2, 's, 'n, 't> {
+struct MonuTabViewer<'a, 'w1, 'w2, 'w3, 's, 'n, 't> {
     selected: &'a mut Option<Entity>,
     cmd_writer: &'a mut MessageWriter<'w1, EditorCommand>,
+    terrain_cmd: &'a mut MessageWriter<'w2, TerrainCommand>,
     level_settings: &'a mut LevelSettings,
-    objects_q: &'a mut Query<'w2, 's, (Entity, &'n Name, &'t mut Transform), With<LevelObject>>,
+    terrain_brush: &'a mut TerrainBrush,
+    objects_q: &'a mut Query<'w3, 's, (Entity, &'n Name, &'t mut Transform), With<LevelObject>>,
+    has_terrain: bool,
 }
 
-impl TabViewer for MonuTabViewer<'_, '_, '_, '_, '_, '_> {
+impl TabViewer for MonuTabViewer<'_, '_, '_, '_, '_, '_, '_> {
     type Tab = EditorTab;
 
     fn id(&mut self, tab: &mut Self::Tab) -> egui::Id {
@@ -186,6 +210,14 @@ impl TabViewer for MonuTabViewer<'_, '_, '_, '_, '_, '_> {
             }
             EditorTab::WorldSettings => {
                 world_settings::draw_world_settings_tab(ui, self.level_settings, self.cmd_writer);
+            }
+            EditorTab::Terrain => {
+                terrain_tab::draw_terrain_tab(
+                    ui,
+                    self.terrain_brush,
+                    self.terrain_cmd,
+                    self.has_terrain,
+                );
             }
             EditorTab::ContentBrowser => {
                 ui.label("Здесь разместим модуль генератора 2D-карты и ландшафта.");

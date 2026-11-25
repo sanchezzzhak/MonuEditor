@@ -7,6 +7,7 @@ use crate::camera::EditorCameraPlugin;
 use crate::commands::EditorCommandsPlugin;
 use crate::gizmos::EditorGizmosPlugin;
 use crate::settings::{LevelSettings, LevelSettingsPlugin};
+use crate::terrain::TerrainPlugin;
 use crate::world::WorldPlugin;
 use crate::ENGINE_VERSION;
 
@@ -50,6 +51,7 @@ impl MonuApp {
             .add_plugins((
                 LevelSettingsPlugin,
                 EditorCommandsPlugin,
+                TerrainPlugin,
                 WorldPlugin,
                 EditorCameraPlugin,
             ));

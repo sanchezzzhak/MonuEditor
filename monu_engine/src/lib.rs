@@ -19,5 +19,6 @@ pub mod vulkan_ctx;
 pub mod world;
 pub use big_space::prelude::CellCoord;
 pub use app::{AppConfig, MonuApp};
+pub mod terrain;
 
 pub const ENGINE_VERSION: &str = env!("CARGO_PKG_VERSION");
