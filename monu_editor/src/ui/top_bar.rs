@@ -1,6 +1,8 @@
 use super::context::EditorUiContext;
 use super::theme::MonuPalette;
 use super::{EditorMode, EditorTab, EditorUiState};
+use super::icons::{svg_icon, EditorIcons};
+
 use bevy::prelude::*;
 use bevy_egui::egui::{self, Color32, CornerRadius, RichText, Stroke};
 use monu_engine::camera::FlyCamera;
@@ -97,6 +99,15 @@ fn draw_main_menus(
     cmd_writer: &mut MessageWriter<EditorCommand>,
 ) {
     ui.menu_button("File", |ui| {
+
+        if ui.add(egui::Button::image_and_text(
+            svg_icon(EditorIcons::SAVE, EditorIcons::SIZE_NORM, false),
+            "Save All",
+        )).clicked() {
+            cmd_writer.write(EditorCommand::SaveLevelSettings);
+            ui.close();
+        }
+
         if ui.button("💾 Save Level Settings").clicked() {
             cmd_writer.write(EditorCommand::SaveLevelSettings);
             ui.close();

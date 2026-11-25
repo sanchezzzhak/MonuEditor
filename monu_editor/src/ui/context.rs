@@ -16,4 +16,6 @@ pub struct EditorUiContext<'a, 'w1, 'w2, 'w3, 's, 'n, 't> {
     pub objects: &'a mut Query<'w3, 's, (Entity, &'n Name, &'t mut Transform), With<LevelObject>>,
     pub has_terrain: bool,
     pub cam_cell: CellCoord,
+    pub cam_tf: Transform,
+    pub cam_moved_by_ui: bool,
 }

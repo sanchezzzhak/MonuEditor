@@ -5,7 +5,7 @@ edition = "2021"
 description = "Редактор уровней Monu Editor"
 
 [dependencies]
-
+egui_extras = { version = "0.36", features = ["svg"] }
 monu_engine = { workspace = true }
 bevy = { workspace = true }
 log = { workspace = true }

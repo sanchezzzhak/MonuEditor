@@ -1,4 +1,5 @@
 mod context;
+mod icons;
 mod details;
 mod outliner;
 mod status_bar;
@@ -6,7 +7,10 @@ mod terrain_tab;
 mod theme;
 mod top_bar;
 mod world_settings;
+mod heightmap_preview;
+mod minimap;
 
+use heightmap_preview::HeightmapPreviewState;
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin, EguiPrimaryContextPass};
@@ -15,9 +19,10 @@ use egui_dock::{DockArea, DockState, TabViewer};
 use monu_engine::camera::FlyCamera;
 use monu_engine::commands::EditorCommand;
 use monu_engine::settings::LevelSettings;
-use monu_engine::terrain::{TerrainBrush, TerrainChunk, TerrainCommand};
+use monu_engine::terrain::{TerrainBrush, TerrainChunk, TerrainCommand, TerrainHeightmap};
 use monu_engine::world::LevelObject;
 use monu_engine::CellCoord;
+
 
 pub struct EditorUiPlugin;
 
@@ -25,7 +30,9 @@ impl Plugin for EditorUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((EguiPlugin::default(), FrameTimeDiagnosticsPlugin::default()))
             .init_resource::<EditorUiState>()
+            .init_resource::<HeightmapPreviewState>()
             .add_systems(EguiPrimaryContextPass, draw_editor_ui);
+
     }
 }
 
@@ -100,6 +107,7 @@ impl EditorTab {
             EditorTab::MaskEditor => "Mask Editor",
             EditorTab::HeightmapPreview => "Heightmap Preview",
             EditorTab::Minimap => "Navigation",
+
         }
     }
 }
@@ -169,17 +177,23 @@ fn draw_editor_ui(
     mut terrain_cmd: MessageWriter<TerrainCommand>,
     mut level_settings: ResMut<LevelSettings>,
     mut terrain_brush: ResMut<TerrainBrush>,
+    mut preview_state: ResMut<HeightmapPreviewState>,
     mut objects_q: Query<(Entity, &Name, &mut Transform), With<LevelObject>>,
     mut cam_q: Query<(&mut FlyCamera, &mut Transform, &mut CellCoord), Without<LevelObject>>,
-    terrain_q: Query<(), With<TerrainChunk>>,
+    chunks_q: Query<(&TerrainChunk, &TerrainHeightmap)>,
     diagnostics: Res<DiagnosticsStore>,
 ) {
     let Ok(ctx) = contexts.ctx_mut() else { return };
+
+    egui_extras::install_image_loaders(&*ctx);
     theme::apply_monu_theme(ctx);
     let dock_style = theme::build_dock_style(ctx);
 
     let mut dock_state = std::mem::replace(&mut ui_state.dock_state, DockState::new(vec![]));
-    let cam_cell = cam_q.single().map(|(_, _, c)| *c).unwrap_or_default();
+    let (init_tf, init_cell) = cam_q
+        .single()
+        .map(|(_, tf, c)| (*tf, *c))
+        .unwrap_or_default();
 
     let mut editor_ctx = EditorUiContext {
         state: &mut ui_state,
@@ -188,8 +202,10 @@ fn draw_editor_ui(
         settings: &mut level_settings,
         brush: &mut terrain_brush,
         objects: &mut objects_q,
-        has_terrain: !terrain_q.is_empty(),
-        cam_cell,
+        has_terrain: !chunks_q.is_empty(),
+        cam_cell: init_cell,
+        cam_tf: init_tf,
+        cam_moved_by_ui: false,
     };
 
     egui::Area::new(egui::Id::new("editor_root_area"))
@@ -226,9 +242,12 @@ fn draw_editor_ui(
                 .show(ui, |ui| {
                     status_bar::draw_status_bar(ui, &editor_ctx, &diagnostics);
                 });
-            // 3. Рабочее пространство с докингом вкладок
+            
+            // Рабочее пространство с докингом вкладок
             let mut viewer = MonuTabViewer {
                 ctx: &mut editor_ctx,
+                chunks_q: &chunks_q,
+                preview_state: &mut preview_state,
             };
 
             DockArea::new(&mut dock_state)
@@ -238,6 +257,13 @@ fn draw_editor_ui(
                 .show_inside(ui, &mut viewer);
         });
 
+    if editor_ctx.cam_moved_by_ui {
+        if let Ok((_, mut cam_tf, mut cam_cell)) = cam_q.single_mut() {
+            *cam_tf = editor_ctx.cam_tf;
+            *cam_cell = editor_ctx.cam_cell;
+        }
+    }
+
     ui_state.dock_state = dock_state;
 
     let over_ui = ctx.egui_is_using_pointer();
@@ -245,15 +271,16 @@ fn draw_editor_ui(
     terrain_brush.pointer_over_ui = over_ui;
 }
 
-struct MonuTabViewer<'a, 'b, 'w1, 'w2, 'w3, 's, 'n, 't> {
-    ctx: &'a mut EditorUiContext<'b, 'w1, 'w2, 'w3, 's, 'n, 't>,
+struct MonuTabViewer<'a, 'b, 'w1, 'w2, 'w3, 'w4, 's1, 's2, 'n, 't, 'c, 'h> {
+    ctx: &'a mut EditorUiContext<'b, 'w1, 'w2, 'w3, 's1, 'n, 't>,
+    chunks_q: &'a Query<'w4, 's2, (&'c TerrainChunk, &'h TerrainHeightmap)>,
+    preview_state: &'a mut HeightmapPreviewState,
 }
 
 
-
-impl TabViewer for MonuTabViewer<'_, '_, '_, '_, '_, '_, '_, '_> {
+impl TabViewer for MonuTabViewer<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
     type Tab = EditorTab;
-    
+
     fn id(&mut self, tab: &mut Self::Tab) -> egui::Id {
         egui::Id::new(tab)
     }
@@ -302,16 +329,21 @@ impl TabViewer for MonuTabViewer<'_, '_, '_, '_, '_, '_, '_, '_> {
                 world_settings::draw_world_settings_tab(ui, self.ctx.settings, self.ctx.cmd);
             }
             EditorTab::ContentBrowser => {
-                ui.label("Здесь разместим модуль генератора 2D-карты (Nortantis) и превью карты высот.");
+                ui.weak("Библиотека текстур и материалов ландшафта.");
             }
             EditorTab::MaskEditor => {
                 ui.weak("Редактор масок биомов (трава, скалы, снег, дороги).");
             }
             EditorTab::HeightmapPreview => {
-                ui.weak("Превью карты высот активного чанка (Min / Max / Avg).");
+                heightmap_preview::draw_heightmap_preview_tab(
+                    ui,
+                    self.ctx,
+                    self.chunks_q,
+                    self.preview_state,
+                );
             }
             EditorTab::Minimap => {
-                ui.weak("Навигационная мини-карта мира.");
+                minimap::draw_minimap_tab(ui, self.ctx, self.chunks_q);
             }
         }
     }
@@ -319,5 +351,4 @@ impl TabViewer for MonuTabViewer<'_, '_, '_, '_, '_, '_, '_, '_> {
     fn clear_background(&self, tab: &Self::Tab) -> bool {
         !matches!(tab, EditorTab::Viewport)
     }
-
 }
