@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101827"/><stop offset="1" stop-color="#1d2c40"/></linearGradient>
+  <linearGradient id="box" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#263b55"/><stop offset="1" stop-color="#1d2c40"/></linearGradient>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#83b7ee"/></marker>
+</defs>
+<rect width="100%" height="100%" rx="28" fill="url(#bg)"/>
+<text x="60" y="70" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="#f3f7fc">Monu — этапы разработки</text>
+<text x="60" y="108" font-family="Arial,sans-serif" font-size="19" fill="#a9bfd8">Закладываем архитектурные контракты заранее, реализуем по приоритетам</text>
+<path d="M370 360 L450 360" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<path d="M750 360 L830 360" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<rect x="70" y="210" width="300" height="300" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="220.0" y="252" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">1. Foundation</text>
+<text x="220.0" y="288" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">Rust API / ECS / scenes</text>
+<text x="220.0" y="314" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">Vulkan forward renderer</text>
+<text x="220.0" y="340" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">Asset Pipeline / shader manager</text>
+<text x="220.0" y="366" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">Terrain / Big Space</text>
+<text x="220.0" y="392" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">Blueprint basics / editor core</text>
+<rect x="450" y="210" width="300" height="300" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="600.0" y="252" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">2. Game Tooling</text>
+<text x="600.0" y="288" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">animation / IK / AI / nav</text>
+<text x="600.0" y="314" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">water / foliage / materials</text>
+<text x="600.0" y="340" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">audio / VFX / UI / dialogue</text>
+<text x="600.0" y="366" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">save system / profilers</text>
+<text x="600.0" y="392" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">first generators</text>
+<rect x="830" y="210" width="300" height="300" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="980.0" y="252" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">3. Advanced</text>
+<text x="980.0" y="288" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">runtime destruction</text>
+<text x="980.0" y="314" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">city / crowd / procedural tools</text>
+<text x="980.0" y="340" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">cinematics / networking</text>
+<text x="980.0" y="366" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">advanced simulation</text>
+<text x="980.0" y="392" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">editor extensions</text>
+</svg>

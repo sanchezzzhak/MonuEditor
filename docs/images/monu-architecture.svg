@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101827"/><stop offset="1" stop-color="#1d2c40"/></linearGradient>
+  <linearGradient id="box" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#263b55"/><stop offset="1" stop-color="#1d2c40"/></linearGradient>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#83b7ee"/></marker>
+</defs>
+<rect width="100%" height="100%" rx="28" fill="url(#bg)"/>
+<text x="60" y="70" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="#f3f7fc">Monu — архитектура верхнего уровня</text>
+<text x="60" y="108" font-family="Arial,sans-serif" font-size="19" fill="#a9bfd8">Rust-first engine • Bevy ECS • Vulkan • расширяемые подсистемы</text>
+<path d="M380 262 L440 262" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<path d="M600 335 L600 430" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<path d="M220 335 L220 430" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<path d="M760 500 L820 500" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<rect x="60" y="190" width="320" height="145" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="220.0" y="232" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Rust / Engine Core</text>
+<text x="220.0" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">API • reflection • lifecycle</text>
+<text x="220.0" y="294" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">сцены • ресурсы • задачи</text>
+<rect x="440" y="190" width="320" height="145" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="600.0" y="232" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Bevy ECS</text>
+<text x="600.0" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">сущности • компоненты</text>
+<text x="600.0" y="294" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">системы • события</text>
+<rect x="820" y="190" width="320" height="145" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="980.0" y="232" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Rendering</text>
+<text x="980.0" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">Vulkan • Forward • WGSL</text>
+<text x="980.0" y="294" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">PBR • GI • Post FX</text>
+<rect x="60" y="430" width="320" height="145" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="220.0" y="472" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Visual Layer</text>
+<text x="220.0" y="508" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">Blueprint • редакторы</text>
+<text x="220.0" y="534" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">данные и вызовы ECS</text>
+<rect x="440" y="430" width="320" height="145" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="600.0" y="472" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Optional Systems</text>
+<text x="600.0" y="508" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">AI • Physics • Audio • UI</text>
+<text x="600.0" y="534" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">Animation • Networking</text>
+<rect x="820" y="430" width="320" height="145" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="980.0" y="472" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Extension API</text>
+<text x="980.0" y="508" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">Rust plugins • custom nodes</text>
+<text x="980.0" y="534" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">custom render / asset types</text>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101827"/><stop offset="1" stop-color="#1d2c40"/></linearGradient>
+  <linearGradient id="box" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#263b55"/><stop offset="1" stop-color="#1d2c40"/></linearGradient>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#83b7ee"/></marker>
+</defs>
+<rect width="100%" height="100%" rx="28" fill="url(#bg)"/>
+<text x="60" y="70" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="#f3f7fc">Большие миры Monu</text>
+<text x="60" y="108" font-family="Arial,sans-serif" font-size="19" fill="#a9bfd8">Big Space остаётся фундаментом координат; streaming отвечает за жизненный цикл чанков</text>
+<path d="M310 295 L370 295" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<path d="M620 295 L680 295" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<path d="M900 295 L960 295" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<path d="M495 370 L495 465" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<path d="M790 370 L790 465" stroke="#83b7ee" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+<rect x="60" y="220" width="250" height="150" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="185.0" y="262" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Big Space</text>
+<text x="185.0" y="298" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">large coordinates</text>
+<text x="185.0" y="324" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">spatial foundation</text>
+<rect x="370" y="220" width="250" height="150" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="495.0" y="262" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">World Streaming</text>
+<text x="495.0" y="298" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">async load / unload</text>
+<text x="495.0" y="324" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">chunk priorities</text>
+<rect x="680" y="220" width="220" height="150" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="790.0" y="262" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">World Data</text>
+<text x="790.0" y="298" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">terrain • caves • water</text>
+<text x="790.0" y="324" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">foliage • structures</text>
+<rect x="960" y="220" width="180" height="150" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="1050.0" y="262" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">LOD / Culling</text>
+<text x="1050.0" y="298" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">frustum • occlusion</text>
+<text x="1050.0" y="324" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">distance tiers</text>
+<rect x="370" y="465" width="250" height="130" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="495.0" y="507" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Persistence</text>
+<text x="495.0" y="543" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">chunk state • deltas</text>
+<text x="495.0" y="569" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">save / restore</text>
+<rect x="680" y="465" width="220" height="130" rx="18" fill="url(#box)" stroke="#54799f" stroke-width="2"/>
+<text x="790.0" y="507" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Profiling</text>
+<text x="790.0" y="543" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">CPU / GPU / memory</text>
+<text x="790.0" y="569" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#c4d5e7">streaming telemetry</text>
+</svg>
